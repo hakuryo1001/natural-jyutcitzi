@@ -10,6 +10,7 @@ A Python tool for finding Chinese characters based on their Cantonese pronunciat
 - **JSON Storage**: Easy character management through `characters.json`
 - **Command Line Interface**: Simple terminal usage
 - **Python API**: Programmatic access for integration
+- **Coverage audit CLI**: `python3 character_coverage.py` lists ✓ vs ◇ ; **`python3 character_coverage.py -I`** (or `--summarize-initials`) prints **all 19 initials** in one table; then e.g. `python3 character_coverage.py b-`
 
 ## Installation
 
