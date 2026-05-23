@@ -1,0 +1,47 @@
+cd "/Users/bon/Documents/jcz/jcz-natural-jyutcitzi"
+
+python3 character_coverage.py
+
+python3 character_coverage.py -I
+
+python3 character_coverage.py --summarize-initials
+
+python3 character_coverage.py b-
+
+python3 character_coverage.py gw-
+
+python3 character_coverage.py --initial ng
+
+python3 character_coverage.py /aa
+
+python3 character_coverage.py --rime ing
+
+python3 character_coverage.py -- -aa
+
+python3 character_coverage.py -- -aa -yun
+
+python3 character_coverage.py j- /ing
+
+python3 character_coverage.py --initial gw --rime aa
+
+python3 character_coverage.py b- --all
+
+python3 character_coverage.py b- --no-filled
+
+python3 character_coverage.py b- --max-missing-print 60 --max-filled-print 120
+
+python3 character_coverage.py --json characters.json -I
+
+NO_COLOR=1 python3 character_coverage.py -I
+
+python3 character_coverage.py --help
+
+python3 jyutping_lookup.py faa
+
+python3 jyutping_lookup.py faa1
+
+python3 jyutping_lookup.py f
+
+python3 jyutping_lookup.py aa
+
+python3 example_usage.py
