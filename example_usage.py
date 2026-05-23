@@ -47,7 +47,7 @@ def main():
     print(f"Total combinations available: {len(lookup.get_available_combinations())}")
 
     print("\n=== JSON File ===")
-    print("All 1,121 possible combinations are pre-populated in characters.json")
+    print("All 1,140 possible combinations are pre-populated in characters.json")
     print("Edit characters.json directly to add characters to any combination!")
     print("Example: Change 'baa': [] to 'baa': ['巴', '爸'] to add characters")
 

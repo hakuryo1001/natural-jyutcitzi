@@ -76,6 +76,7 @@ class JyutpingLookup:
             "ei",
             "eu",
             "em",
+            "en",
             "eng",
             "ep",
             "et",

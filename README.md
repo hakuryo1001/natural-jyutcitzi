@@ -6,7 +6,7 @@ A Python tool for finding Chinese characters based on their Cantonese pronunciat
 
 - **Comprehensive Lookup**: Returns three types of results for any query
 - **Tone-Agnostic**: Automatically handles Jyutping with or without tone numbers
-- **Pre-populated Database**: All 1,121 possible Cantonese combinations included
+- **Pre-populated Database**: All 1,140 possible Cantonese syllable keys included (19 initials × 60 finals)
 - **JSON Storage**: Easy character management through `characters.json`
 - **Command Line Interface**: Simple terminal usage
 - **Python API**: Programmatic access for integration
@@ -98,17 +98,17 @@ Edit `characters.json` directly to add characters:
 
 ## Available Combinations
 
-The database includes all 1,121 possible Cantonese combinations:
+The database includes all **1,140** possible syllable keys (19 initials × **60** finals):
 
 - **19 Initials**: b, p, m, f, d, t, n, l, g, k, ng, h, gw, kw, w, z, c, s, j
-- **59 Finals**: aa, aai, aau, aam, aan, aang, aap, aat, aak, a, ai, au, am, an, ang, ap, at, ak, e, ei, eu, em, eng, ep, et, ek, i, iu, im, in, ing, ip, it, ik, o, oi, ou, on, ong, ot, ok, u, ui, un, ung, ut, uk, eoi, eon, eot, oe, oeng, oet, oek, yu, yun, yut, m, ng
+- **60 Finals**: aa, aai, aau, aam, aan, aang, aap, aat, aak, a, ai, au, am, an, ang, ap, at, ak, e, ei, eu, em, **en**, eng, ep, et, ek, i, iu, im, in, ing, ip, it, ik, o, oi, ou, on, ong, ot, ok, u, ui, un, ung, ut, uk, eoi, eon, eot, oe, oeng, oet, oek, yu, yun, yut, m, ng
 
 ## File Structure
 
 ```
 natural-jyutcitzi/
 ├── jyutping_lookup.py    # Main lookup tool
-├── characters.json       # Character database (1,121 combinations)
+├── characters.json       # Character database (1,140 combinations)
 ├── example_usage.py      # Usage examples
 └── README.md            # This file
 ```
