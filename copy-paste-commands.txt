@@ -6,6 +6,12 @@ python3 character_coverage.py -I
 
 python3 character_coverage.py --summarize-initials
 
+python3 character_coverage.py -F
+
+python3 character_coverage.py --summarize-finals
+
+python3 character_coverage.py -I -F
+
 python3 character_coverage.py b-
 
 python3 character_coverage.py gw-

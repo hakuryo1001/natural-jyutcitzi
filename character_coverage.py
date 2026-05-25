@@ -3,7 +3,9 @@
 Fun coverage checker for characters.json — see which syllable slots are empty.
 
   python character_coverage.py                  # stats, then ✓ filled, then ◇ gaps (truncated)
-  python character_coverage.py --summarize-initials -I   # one line per onset (all initials)
+  python character_coverage.py -I -F                    # initials + finals leaderboard
+  python character_coverage.py --summarize-initials     # onsets: most complete → least
+  python character_coverage.py --summarize-finals        # rimes: most complete → least
   python character_coverage.py b-               # onset b…
   python character_coverage.py gw-               # onset gw…
   python character_coverage.py /aa               # slice rime …aa (slash avoids argparse eating -aa)
@@ -98,6 +100,33 @@ def parse_filters(ns: argparse.Namespace, finals_set: set) -> Tuple[Optional[str
     return onset_f, rime_f
 
 
+def _completion_sort_key(ok: int, tot: int, label: str) -> Tuple:
+    """Most complete first (higher fill rate); rows with tot==0 last; tie-break by label."""
+    if tot <= 0:
+        return (2, 1.0, label)  # after everyone else
+    rate = ok / tot
+    return (0, -rate, label)
+
+
+def _print_summary_line(
+    label: str,
+    label_w: int,
+    ok: int,
+    tot: int,
+) -> None:
+    miss = tot - ok
+    pct = (100.0 * ok / tot) if tot else 0.0
+    base = f"  {label:<{label_w}}  {ok:5d}  {tot:5d}  {pct:5.1f}%  {miss:5d}"
+    if tot == 0:
+        print(dim(base + "  (no syllable keys)"))
+    elif miss == 0:
+        print(green(base + "  ✓"))
+    elif ok == 0:
+        print(pink(base))
+    else:
+        print(base)
+
+
 def summarize_initials(
     path: str,
     lookup: JyutpingLookup,
@@ -118,38 +147,87 @@ def summarize_initials(
         grouped[ini].append((key, ch))
 
     print(bold("\nCoverage by initial") + f" ({path})")
+    print(dim("  order: most complete → least (fill %); onsets with no keys at bottom"))
     if skipped:
         print(dim(f"  ({skipped} keys not in initials×finals grid — skipped)"))
     print()
-    hdr = f"  {'onset':<4}  {'filled':>5}  {'total':>5}  {'pct':>6}  {'empty':>5}"
+    lw = 4
+    hdr = f"  {'onset':<{lw}}  {'filled':>5}  {'total':>5}  {'pct':>6}  {'empty':>5}"
     print(dim(hdr))
-    print(dim("  " + "─" * 38))
+    print(dim("  " + "─" * 42))
 
     g_ok = g_tot = 0
+    buckets: List[Tuple[str, int, int]] = []
     for ini in lookup.initials.keys():
         rows = grouped.get(ini, [])
         tot = len(rows)
         ok = sum(1 for _, ch in rows if is_filled(ch))
         g_ok += ok
         g_tot += tot
-        miss = tot - ok
-        pct = (100.0 * ok / tot) if tot else 0.0
-        line = f"  {ini:<4}  {ok:5d}  {tot:5d}  {pct:5.1f}%  {miss:5d}"
-        if tot == 0:
-            print(dim(line + "  (no keys)"))
-        elif miss == 0:
-            print(green(line + "  ✓"))
-        elif ok == 0:
-            print(pink(line))
-        else:
-            print(line)
+        buckets.append((ini, ok, tot))
 
-    print(dim("  " + "─" * 38))
+    buckets.sort(key=lambda t: _completion_sort_key(t[1], t[2], t[0]))
+    for ini, ok, tot in buckets:
+        _print_summary_line(ini, lw, ok, tot)
+
+    print(dim("  " + "─" * 42))
     gpct = (100.0 * g_ok / g_tot) if g_tot else 0.0
-    tail = f"  {'ALL':<4}  {g_ok:5d}  {g_tot:5d}  {gpct:5.1f}%  {g_tot - g_ok:5d}"
+    tail = f"  {'ALL':<{lw}}  {g_ok:5d}  {g_tot:5d}  {gpct:5.1f}%  {g_tot - g_ok:5d}"
     print(bold(tail))
     print()
-    print(dim("  drill down:  python character_coverage.py <onset>-   e.g.  python character_coverage.py b-"))
+    print(dim("  drill down:  python character_coverage.py <onset>-"))
+    print()
+
+
+def summarize_finals(
+    path: str,
+    lookup: JyutpingLookup,
+    initials_desc: List[str],
+    finals_set: set,
+) -> None:
+    with open(path, encoding="utf-8") as f:
+        chars_map: Dict[str, list] = json.load(f)
+
+    grouped: Dict[str, List[Tuple[str, list]]] = defaultdict(list)
+    skipped = 0
+    for key, ch in chars_map.items():
+        parts = syllable_parts(key, initials_desc, finals_set)
+        if parts is None:
+            skipped += 1
+            continue
+        _, rime = parts
+        grouped[rime].append((key, ch))
+
+    lw = max(4, max((len(r) for r in lookup.finals.keys()), default=4))
+    print(bold("\nCoverage by final (rime)") + f" ({path})")
+    print(dim("  order: most complete → least (fill %); finals with no keys at bottom"))
+    if skipped:
+        print(dim(f"  ({skipped} keys not in initials×finals grid — skipped)"))
+    print()
+    hdr = f"  {'rime':<{lw}}  {'filled':>5}  {'total':>5}  {'pct':>6}  {'empty':>5}"
+    print(dim(hdr))
+    print(dim("  " + "─" * (lw + 28)))
+
+    g_ok = g_tot = 0
+    buckets: List[Tuple[str, int, int]] = []
+    for rime in lookup.finals.keys():
+        rows = grouped.get(rime, [])
+        tot = len(rows)
+        ok = sum(1 for _, ch in rows if is_filled(ch))
+        g_ok += ok
+        g_tot += tot
+        buckets.append((rime, ok, tot))
+
+    buckets.sort(key=lambda t: _completion_sort_key(t[1], t[2], t[0]))
+    for rime, ok, tot in buckets:
+        _print_summary_line(rime, lw, ok, tot)
+
+    print(dim("  " + "─" * (lw + 28)))
+    gpct = (100.0 * g_ok / g_tot) if g_tot else 0.0
+    tail = f"  {'ALL':<{lw}}  {g_ok:5d}  {g_tot:5d}  {gpct:5.1f}%  {g_tot - g_ok:5d}"
+    print(bold(tail))
+    print()
+    print(dim('  drill down:  python character_coverage.py /<rime>    e.g.  python character_coverage.py /aa'))
     print()
 
 
@@ -166,7 +244,13 @@ def main() -> None:
         "-I",
         "--summarize-initials",
         action="store_true",
-        help="print a compact table for every onset (ignores other filters)",
+        help="coverage per onset — sorted most → least complete (combine with -F)",
+    )
+    ap.add_argument(
+        "-F",
+        "--summarize-finals",
+        action="store_true",
+        help="coverage per rime — sorted most → least complete (combine with -I)",
     )
     ap.add_argument(
         "--all",
@@ -221,10 +305,16 @@ def main() -> None:
     initials_desc = sorted(lookup.initials.keys(), key=lambda s: (-len(s), s))
     finals_set = set(lookup.finals.keys())
 
-    if ns.summarize_initials:
+    if ns.summarize_initials or ns.summarize_finals:
         if ns.filters or ns.initial_explicit is not None or ns.rime_explicit is not None:
-            sys.exit("use --summarize-initials alone (omit b-, /aa, --initial, --rime, etc.).")
-        summarize_initials(path, lookup, initials_desc, finals_set)
+            sys.exit(
+                "use --summarize-initials / --summarize-finals alone "
+                "(omit b-, /aa, --initial, --rime, etc.)."
+            )
+        if ns.summarize_initials:
+            summarize_initials(path, lookup, initials_desc, finals_set)
+        if ns.summarize_finals:
+            summarize_finals(path, lookup, initials_desc, finals_set)
         return
 
     if ns.rime_explicit is not None and ns.rime_explicit not in finals_set:
