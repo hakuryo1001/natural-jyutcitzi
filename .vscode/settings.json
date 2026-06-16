@@ -1,0 +1,8 @@
+{
+  "[json]": {
+    "editor.fontFamily": "Menlo, Monaco, 'Courier New', HanaMinA, HanaMinB, 'BabelStone Han', monospace"
+  },
+  "[jsonc]": {
+    "editor.fontFamily": "Menlo, Monaco, 'Courier New', HanaMinA, HanaMinB, 'BabelStone Han', monospace"
+  }
+}
